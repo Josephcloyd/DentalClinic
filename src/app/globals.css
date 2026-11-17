@@ -1,0 +1,283 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pearl: #f8f7f4;
+  --color-ink: #0e1b2c;
+  --color-mint: #cfe6df;
+  --color-sand: #e4d9c8;
+  --color-aqua: #3fb8af;
+  /* Darker aqua for text on light surfaces (5.3:1 on pearl — AA). */
+  --color-teal: #1d6f69;
+  --color-mist: #eef5f2;
+
+  --font-serif: var(--font-instrument), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-precise: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: light;
+  --display: clamp(4rem, 9vw, 9rem);
+  --display-sm: clamp(2.75rem, 6vw, 5.5rem);
+  --gutter: clamp(1rem, 4vw, 3rem);
+}
+
+html {
+  background: var(--color-pearl);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+body {
+  background: var(--color-pearl);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+section[id],
+main {
+  scroll-margin-top: 72px;
+}
+
+::selection {
+  background: var(--color-mint);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--color-aqua);
+}
+
+.display {
+  font-family: var(--font-serif);
+  font-size: var(--display);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+}
+.display-sm {
+  font-family: var(--font-serif);
+  font-size: var(--display-sm);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* ---------- Glass ----------
+   .glass      cheap frosted look (translucent fill, no backdrop-filter) — safe to animate
+   .glass-live true backdrop blur — reserved for the navbar and mobile menu, which sit over
+               moving content. backdrop-filter re-renders everything beneath it every frame,
+               so it must never be used on elements that scroll, scrub or follow the cursor. */
+.glass {
+  background: rgb(255 255 255 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.85);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 30px 60px -30px rgb(14 27 44 / 0.25);
+}
+.glass-live {
+  background: rgb(255 255 255 / 0.66);
+  border: 1px solid rgb(255 255 255 / 0.75);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.9) inset;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.glass-dark {
+  background: rgb(14 27 44 / 0.7);
+  border: 1px solid rgb(255 255 255 / 0.14);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-live {
+    background: rgb(255 255 255 / 0.92);
+  }
+}
+
+/* ---------- The gleam: one diagonal light sweep ---------- */
+/* Layered so utilities such as `fixed` or `absolute` still win over `position: relative`. */
+@layer components {
+.gleam {
+  position: relative;
+  isolation: isolate;
+}
+.gleam::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.7) 50%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  background-position: 160% 0;
+  opacity: 0;
+}
+.gleam.is-gleaming::after {
+  animation: gleam 1.4s var(--ease-precise) 1 forwards;
+}
+@keyframes gleam {
+  0% {
+    opacity: 1;
+    background-position: 160% 0;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    background-position: -60% 0;
+  }
+}
+}
+
+/* ---------- Scroll indicator ---------- */
+.soft-pulse {
+  animation: soft-pulse 2.4s ease-in-out infinite;
+}
+@keyframes soft-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(63 184 175 / 0.45);
+    opacity: 0.7;
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgb(63 184 175 / 0);
+    opacity: 1;
+  }
+}
+
+/* ---------- Preloader ---------- */
+.preloader {
+  /* Failsafe: never leave the page covered if scripts fail to run. */
+  animation: preloader-failsafe 0.4s ease 4s forwards;
+}
+.preloader-fog {
+  --hole: 0%;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--hole),
+    #000 calc(var(--hole) + 18%)
+  );
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 18%));
+}
+@keyframes preloader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ---------- Services lenses ---------- */
+.lens-face {
+  transition:
+    opacity 0.5s var(--ease-precise),
+    filter 0.5s var(--ease-precise),
+    transform 0.6s var(--ease-expo);
+}
+.services-grid[data-active] .lens-item:not([data-open]) .lens-face {
+  opacity: 0.35;
+  filter: blur(3px) saturate(0.6);
+}
+html:not([data-blur="full"]) .services-grid[data-active] .lens-item:not([data-open]) .lens-face {
+  filter: none;
+}
+.service-card {
+  clip-path: circle(var(--r0, 0px) at var(--cx, 50%) var(--cy, 0px));
+  visibility: hidden;
+  transition:
+    clip-path 0.75s var(--ease-expo),
+    visibility 0s linear 0.75s;
+}
+.service-card[data-open] {
+  clip-path: circle(150% at var(--cx, 50%) var(--cy, 0px));
+  visibility: visible;
+  transition:
+    clip-path 0.75s var(--ease-expo),
+    visibility 0s linear 0s;
+}
+
+/* ---------- Before / after ---------- */
+.before-filter {
+  filter: sepia(0.38) saturate(0.7) brightness(0.9) contrast(0.92) hue-rotate(-6deg);
+}
+
+/* ---------- Custom cursor ---------- */
+html.has-cursor,
+html.has-cursor a,
+html.has-cursor button,
+html.has-cursor [role="slider"],
+html.has-cursor [data-cursor] {
+  cursor: none;
+}
+html.has-cursor input,
+html.has-cursor textarea,
+html.has-cursor select {
+  cursor: auto;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .preloader {
+    display: none;
+  }
+  .soft-pulse,
+  .gleam.is-gleaming::after {
+    animation: none;
+  }
+  .service-card,
+  .service-card[data-open] {
+    clip-path: none;
+    opacity: 0;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s linear 0.3s;
+  }
+  .service-card[data-open] {
+    opacity: 1;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s;
+  }
+}
